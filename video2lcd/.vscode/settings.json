@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "pic_operation.h": "c",
+        "disp_manager.h": "c",
+        "video_manager.h": "c"
+    }
+}
