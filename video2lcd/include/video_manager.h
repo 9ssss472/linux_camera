@@ -5,16 +5,34 @@
 
 #define VIDEO_PATH "/dev/video1"
 
-typedef struct VideoOpr {
+typedef struct VideoOpr T_VideoOpr, *PT_VideoOpr;
+typedef struct VideoDevice T_VideoDevice, *PT_VideoDevice;
+
+#define FRAME_COUNTS  3;
+
+struct VideoDevice {
     int iFd;
-    int (*VideoInit)(void);
-    int (*VideoGetFrame)(void);
-    int (*VideoExit)(void);
-    int (*VideoStart)(void);
-    int (*VideoStop)(void);
+    int pixelFormat;
+    int width;
+    int height;
+    int sizeOfOneFrame;
+    int frameCount;
+    unsigned char *aucFrameBuffer[FRAME_COUNTS];
+
+    PT_VideoOpr ptVideoOpr;
+};
+
+struct VideoOpr {
+    char *name;
+    
+    int (*VideoInit)(PT_VideoDevice ptVideoDevice);
+    int (*VideoGetFrame)(PT_VideoDevice ptVideoDevice);
+    int (*VideoExit)(PT_VideoDevice ptVideoDevice);
+    int (*VideoStart)(PT_VideoDevice ptVideoDevice);
+    int (*VideoStop)(PT_VideoDevice ptVideoDevice);
     struct VideoOpr *pNext;
 
-}T_VideoOpr, *PT_VideoOpr;
+};
 
 int RegisterVideoOpr(PT_VideoOpr ptVideoOpr);
 int RegisterV4L2Opr(void);
