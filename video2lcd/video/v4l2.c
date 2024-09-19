@@ -9,9 +9,13 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <stdlib.h>
 
 T_VideoOpr V4L2Opr;
+
+static int  {V4L2_PIX_FMT_RGB565,  V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_JPEG};
+
+#define DEFAULT_FORMAT V4L2_PIX_FMT_RGB565
 
 
 int V4L2Init(PT_VideoDevice ptVideoDevice)
@@ -36,14 +40,14 @@ int V4L2Init(PT_VideoDevice ptVideoDevice)
     tFmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     tFmt.fmt.pix.width = x;
     tFmt.fmt.pix.height = y;
-    tFmt.fmt.pix.format = V4L2_PIX_FMT_RGB565;
+    tFmt.fmt.pix.format = DEFAULT_FORMAT;
 
     if ( 0 > ioctl(iFd , VIDIOC_S_FMT, &tFmt))
     {
         perror("ioctl VIDIOC_S_FMT");
         return -1;
     }
-
+    ptVideoDevice ->pixelFormat = DEFAULT_FORMAT;
     ptVideoDevice ->width = tFmt.width;
     ptVideoDevice ->height = tFmt.height;
 
@@ -87,9 +91,49 @@ int V4L2Init(PT_VideoDevice ptVideoDevice)
 
 }
 
-int V4L2GetFrame(PT_VideoDevice ptVideoDevice)
+int V4L2GetFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
 {
+    struct pollfd fds;
+    struct v4l2_buffer buf;
+    int ret;
 
+    fds.fd = ptVideoDevice ->iFd;
+    fds.events = POLLIN;
+    fds.revents = 0;
+
+    ret = poll(&fds, 1, -1);
+    if(ret < 0)
+    {
+        perror("poll fds:");
+        return -1;
+    }
+
+
+
+    memset(&buf, 0, sizeof(buf));
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    ret = ioctl(ptVideoDevice->iFd, VIDIOC_DQBUF, &buf);
+    if(ret < 0)
+    {
+        perror("ioctl VIDIOC_DQBUF:");
+        return -1;
+    }
+
+    ptVideoDevice -> frameIndex = buf.index;
+
+    ptPixelDataset ->ptVideoBuffer.iWidth = buf.width;
+    ptPixelDataset ->ptVideoBuffer.iHeight = buf.height;
+    ptPixelDataset ->ptVideoBuffer.iBpp = (ptVideoDevice ->pixelFormat == V4L2_PIX_FMT_RGB565 ) ? 16  :\ 
+                                        (ptVideoDevice ->pixelFormat == V4L2_PIX_FMT_YUYV ) ? 16 :\
+                                        (ptVideoDevice -> pixelFormat == V4L2_PIX_FMT_JPEG ) ? 16 : 0 ;
+
+    ptPixelDataset ->ptVideoBuffer.iLineBytes = buf.width *ptPixelDataset ->ptVideoBuffer.iBpp /8;
+    ptPixelDataset ->ptVideoBuffer.iTotalBytes = buf.bytesused;
+    ptPixelDataset ->ptVideoBuffer.aucPixelDatas[ptVideoDevice -> frameIndex] = ptVideoDevice ->aucFrameBuffer[ptVideoDevice -> frameIndex];
+    ptPixelDataset ->pixelFormat = ptVideoDevice -> pixelFormat;
+
+    return 0;
 }
 
 int VideoExit(PT_VideoDevice ptVideoDevice)

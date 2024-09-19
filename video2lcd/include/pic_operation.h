@@ -1,27 +1,18 @@
 
-#ifndef _PIC_OPERATION_H
-#define _PIC_OPERATION_H
+#ifndef _PIC_OPERATION1_H
+#define _PIC_OPERATION1_H
 
-#include <file.h>
 
-/* Í¼Æ¬µÄÏóËØÊı¾İ */
+/* å›¾ç‰‡çš„è±¡ç´ æ•°æ® */
 typedef struct PixelDatas {
-	int iWidth;   /* ¿í¶È: Ò»ĞĞÓĞ¶àÉÙ¸öÏóËØ */
-	int iHeight;  /* ¸ß¶È: Ò»ÁĞÓĞ¶àÉÙ¸öÏóËØ */
-	int iBpp;     /* Ò»¸öÏóËØÓÃ¶àÉÙÎ»À´±íÊ¾ */
-	int iLineBytes;  /* Ò»ĞĞÊı¾İÓĞ¶àÉÙ×Ö½Ú */
-	int iTotalBytes; /* ËùÓĞ×Ö½ÚÊı */ 
-	unsigned char *aucPixelDatas;  /* ÏóËØÊı¾İ´æ´¢µÄµØ·½ */
+	int iWidth;   /* å®½åº¦: ä¸€è¡Œæœ‰å¤šå°‘ä¸ªè±¡ç´  */
+	int iHeight;  /* é«˜åº¦: ä¸€åˆ—æœ‰å¤šå°‘ä¸ªè±¡ç´  */
+	int iBpp;     /* ä¸€ä¸ªè±¡ç´ ç”¨å¤šå°‘ä½æ¥è¡¨ç¤º */
+	int iLineBytes;  /* ä¸€è¡Œæ•°æ®æœ‰å¤šå°‘å­—èŠ‚ */
+	int iTotalBytes; /* æ‰€æœ‰å­—èŠ‚æ•° */ 
+	unsigned char *aucPixelDatas;  /* è±¡ç´ æ•°æ®å­˜å‚¨çš„åœ°æ–¹ */
 }T_PixelDatas, *PT_PixelDatas;
 
-
-typedef struct PicFileParser {
-	char *name;                     /* Í¼Æ¬ÎÄ¼ş½âÎöÄ£¿éµÄÃû×Ö */
-	int (*isSupport)(PT_FileMap ptFileMap);  /* ÊÇ·ñÖ§³ÖÄ³ÎÄ¼ş */
-	int (*GetPixelDatas)(PT_FileMap ptFileMap, PT_PixelDatas ptPixelDatas);  /* ´ÓÎÄ¼şÖĞ½âÎö³öÍ¼ÏñµÄÏóËØÊı¾İ */
-	int (*FreePixelDatas)(PT_PixelDatas ptPixelDatas);  /* ÊÍ·ÅÍ¼ÏñµÄÏóËØÊı¾İËùÕ¼ÄÚ´æ */
-    struct PicFileParser *ptNext;  /* Á´±í */
-}T_PicFileParser, *PT_PicFileParser;
 
 #endif /* _PIC_OPERATION_H */
 
