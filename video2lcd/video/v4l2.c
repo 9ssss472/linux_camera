@@ -13,9 +13,25 @@
 
 T_VideoOpr V4L2Opr;
 
-static int  {V4L2_PIX_FMT_RGB565,  V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_JPEG};
+static int  g_aiSuportedFormat{V4L2_PIX_FMT_RGB565,  V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_JPEG};
 
 #define DEFAULT_FORMAT V4L2_PIX_FMT_RGB565
+
+int IsSupported(int format)
+{
+    int i;
+
+    for(i = 0; i <3; i++)
+    {
+        if(format == g_aiSuportedFormat[i])
+        {
+            return 1;
+        }
+
+    }
+
+    return 0;
+}
 
 
 int V4L2Init(PT_VideoDevice ptVideoDevice)

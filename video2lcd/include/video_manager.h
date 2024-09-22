@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "pic_operation.h"
+#include <linux/videodev2.h>
 
 #define VIDEO_PATH "/dev/video1"
 
