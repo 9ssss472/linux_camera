@@ -83,10 +83,20 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
 {
     T_MyErrorMgr tJerr;
     sturct jpeg_decompress_struct cinfo;
+    unsigned char * pucLineBuffer;
+    int i;
+    unsigned char * pucConvertLineBuffer;
+
     if(setjmp(tJerr.jmp_buf))
     {
         jpeg_destroy_decompress(&cinfo);
+        if(pucLineBuffer)
+            free(pucLineBuffer);
 
+        if(ptConvert ->tVideoBuffer.aucPixelDatas)
+            free(ptConvert ->tVideoBuffer.aucPixelDatas);
+
+        return -1; 
 
     }
 
@@ -100,7 +110,34 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
     cinfo.scale_num=1;
     cinfo.scale_denom=2;
 
+    jpeg_start_decompress(&cinfo);
+
+    ptConvert ->tVideoBuffer.iHeight = cinfo.out_height;
+    ptConvert ->tVideoBuffer.iWidth = cinfo.out_width;
+    ptConvert ->tVideoBuffer.iLineBytes = cinfo.out_width *ptConvert->tVideoBuffer.iBpp / 8;
+    ptConvert ->tVideoBuffer.iTotalBytes =  ptConvert ->tVideoBuffer.iLineBytes * cinfo.out_height;
+
+    pucConvertLineBuffer = ptConvert ->tVideoBuffer.aucPixelDatas;
+
+    pucLineBuffer = malloc(cinfo.output_width * cinfo.output_components);
+    if(pucLineBuffer == (void *) -1)
+    {
+        perror("malloc pucLineBuffer:");
+        return -1;
+    }
+
+    while(cinfo.output_scanline < cinfo.output_height)
+    {
+        jpeg_read_scanline(&cinfo, &pucLineBuffer,1);
+
+        convertLine(cinfo.output_width, 24, ptConvert->tVideoBuffer.iBpp , pucLineBuffer, pucConvertLineBuffer);
+        pucConvertLineBuffer +=  ptConvert ->tVideoBuffer.iLineBytes;
+
+    }
     
+    free(pucLineBuffer);
+    jpeg_finish_decompress(&cinfo);
+    jpeg_decompress_destroy(&cinfo);
 
 }
 
