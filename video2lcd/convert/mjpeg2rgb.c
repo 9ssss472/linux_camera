@@ -1,6 +1,25 @@
 #include "convert_manager.h"
 #include "libjpeg.h"
 #include <string.h>
+#include <setjmp.h>
+
+typedef stuct TMyErrorMgr {
+    struct jpeg_error_mgr jerr;
+    jmp_buf jmp_buf;
+}T_MyErrorMgr, *PT_MyErrorMgr;
+
+void my_error_exit(struct jpeg_decompress_struct *cinfo)
+{
+     static char errStr[JMSG_LENGTH_MAX];
+    
+	PT_MyErrorMgr ptMyErr = (PT_MyErrorMgr)ptCInfo->err;
+
+    /* Create the message */
+    (*ptCInfo->err->format_message) (ptCInfo, errStr);
+    DBG_PRINTF("%s\n", errStr);
+
+    longjmp(ptMyErr->jmp_buf,);
+}
 
 int isSupportMjpeg2rgb(int formatSrc, int formatDest)
 {
@@ -62,7 +81,16 @@ int convertLine(int width,int srcBpp, int destBpp, unsigned char * pucSrcData, u
 
 int convertMjpeg2rgbFormat(T_VideoDevice ptSource, PT_VideoDevice ptConvert)
 {
+    T_MyErrorMgr tJerr;
+    sturct jpeg_decompress_struct cinfo;
+    if(setjmp(tJerr.jmp_buf))
+    {
+        jpeg_destroy_decompress(&cinfo);
 
+
+    }
+
+    
 
 }
 
