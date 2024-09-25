@@ -8,8 +8,8 @@ typedef struct ConvetrOpr
 {
     char *name;
     int (*isSupported)(int formatSrc, int formatDest);
-    int (*convertFormat)(PT_VideoDevice ptSource, PT_VideoDevice ptConvert);
-    struct ConvetrOpr * pNext;
+    int (*convertFormat)(PT_PixelDataset ptSource, PT_PixelDataset ptConvert);
+    struct ConvetrOpr * ptNext;
 }T_ConvertOpr, *PT_ConvertOpr;
 
 int RegisterConvertOpr(PT_ConvertOpr ptConvertOpr);

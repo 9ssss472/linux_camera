@@ -79,7 +79,7 @@ int convertLine(int width,int srcBpp, int destBpp, unsigned char * pucSrcData, u
 
 }
 
-int convertMjpeg2rgbFormat(T_VideoDevice ptSource, PT_VideoDevice ptConvert)
+int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
 {
     T_MyErrorMgr tJerr;
     sturct jpeg_decompress_struct cinfo;
@@ -89,6 +89,16 @@ int convertMjpeg2rgbFormat(T_VideoDevice ptSource, PT_VideoDevice ptConvert)
 
 
     }
+
+    jpeg_create_decompress(&cinfo);
+    
+    jpeg_mem_src_tj(&cinfo, ptSource ->tVideoBuffer.aucPixelDatas, ptSource ->tVideoBuffer.iTotalBytes);
+
+    jpeg_read_header(&cinfo, true);
+
+    cinfo.out_color_space = JCS_RGB;
+    cinfo.scale_num=1;
+    cinfo.scale_denom=2;
 
     
 

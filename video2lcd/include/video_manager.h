@@ -38,7 +38,7 @@ struct VideoOpr {
 };
 
 struct VideoBuffer {
-    T_PixelDatas ptVideoBuffer;
+    T_PixelDatas tVideoBuffer;
     int pixelFormat;
 
 };

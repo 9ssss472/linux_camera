@@ -9,7 +9,7 @@ int RegisterConvertOpr(PT_ConvertOpr ptConvertOpr)
 	if (!g_ptConvertOprHead)
 	{
 		g_ptConvertOprHead   = ptConvertOpr;
-		ptDispOpr->ptNext = NULL;
+		ptConvertOpr->ptNext = NULL;
 	}
 	else
 	{
@@ -19,7 +19,7 @@ int RegisterConvertOpr(PT_ConvertOpr ptConvertOpr)
 			ptTmp = ptTmp->ptNext;
 		}
 		ptTmp->ptNext	  = ptConvertOpr;
-		ptDispOpr->ptNext = NULL;
+		ptConvertOpr->ptNext = NULL;
 	}
 
 	return 0;

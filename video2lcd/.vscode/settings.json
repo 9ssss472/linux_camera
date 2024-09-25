@@ -2,7 +2,8 @@
   "files.associations": {
     "pic_operation.h": "c",
     "disp_manager.h": "c",
-    "video_manager.h": "c"
+    "video_manager.h": "c",
+    "convert_manager.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
