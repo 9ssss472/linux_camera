@@ -19,75 +19,35 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include "video_manager.h"
 
 
-/* digitpic <freetype_file> */
 int main(int argc, char **argv)
 {	
 	int iError;
 
-	/* ³õÊ¼»¯µ÷ÊÔÄ£¿é: ¿ÉÒÔÍ¨¹ı"±ê×¼Êä³ö"Ò²¿ÉÒÔÍ¨¹ı"ÍøÂç"´òÓ¡µ÷ÊÔĞÅÏ¢
-	 * ÒòÎªÏÂÃæÂíÉÏ¾ÍÒªÓÃµ½DBG_PRINTFº¯Êı, ËùÒÔÏÈ³õÊ¼»¯µ÷ÊÔÄ£¿é
-	 */
+	PT_VideoDevice ptVideoDevice;
 
-	/* ×¢²áµ÷ÊÔÍ¨µÀ */
-	DebugInit();
-
-	/* ³õÊ¼»¯µ÷ÊÔÍ¨µÀ */
-	InitDebugChanel();
-
-	if (argc != 2)
-	{
-		DBG_PRINTF("Usage:\n");
-		DBG_PRINTF("%s <freetype_file>\n", argv[0]);
-		return 0;
-	}
-
-	/* ×¢²áÏÔÊ¾Éè±¸ */
+	/*æ˜¾ç¤ºå™¨åˆå§‹åŒ–*/
 	DisplayInit();
-	/* ¿ÉÄÜ¿ÉÖ§³Ö¶à¸öÏÔÊ¾Éè±¸: Ñ¡ÔñºÍ³õÊ¼»¯Ö¸¶¨µÄÏÔÊ¾Éè±¸ */
+
 	SelectAndInitDefaultDispDev("fb");
 
-	/* 
-	 * VideoMem: Îª¼Ó¿ìÏÔÊ¾ËÙ¶È,ÎÒÃÇÊÂÏÈÔÚÄÚ´æÖĞ¹¹ÔìºÃÏÔÊ¾µÄÒ³ÃæµÄÊı¾İ,
-	             (Õâ¸öÄÚ´æ³ÆÎªVideoMem)
-	 *           ÏÔÊ¾Ê±ÔÙ°ÑVideoMemÖĞµÄÊı¾İ¸´ÖÆµ½Éè±¸µÄÏÔ´æÉÏ
-	 * ²ÎÊıµÄº¬Òå¾ÍÊÇ·ÖÅäµÄ¶àÉÙ¸öVideoMem
-	 * ²ÎÊı¿ÉÈ¡Îª0, ÕâÒâÎ¶×ÅËùÓĞµÄÏÔÊ¾Êı¾İ¶¼ÊÇÔÚÏÔÊ¾Ê±ÔÙÏÖ³¡Éú³É,È»ºóĞ´ÈëÏÔ´æ
-	 */
-	AllocVideoMem(5);
+	/*æ‘„åƒå¤´åˆå§‹åŒ–*/
+	VideoOprInit();
 
-    /* ×¢²áÊäÈëÉè±¸ */
-	InputInit();
-    /* µ÷ÓÃËùÓĞÊäÈëÉè±¸µÄ³õÊ¼»¯º¯Êı */
-	AllInputDevicesInit();
+	VideoDeviceInit("v4l2",ptVideoDevice);
 
-    /* ×¢²á±àÂëÄ£¿é */
-    EncodingInit();
+	/*è½¬æ¢æ ¼å¼åˆå§‹åŒ–*/
+	ConvertOprInit();
 
-    /* ×¢²á×Ö¿âÄ£¿é */
-	iError = FontsInit();
-	if (iError)
-	{
-		DBG_PRINTF("FontsInit error!\n");
-	}
+	
+	
 
-    /* ÉèÖÃfreetype×Ö¿âËùÓÃµÄÎÄ¼şºÍ×ÖÌå³ß´ç */
-	iError = SetFontsDetail("freetype", argv[1], 24);
-	if (iError)
-	{
-		DBG_PRINTF("SetFontsDetail error!\n");
-	}
 
-    /* ×¢²áÍ¼Æ¬ÎÄ¼ş½âÎöÄ£¿é */
-    PicFmtsInit();
 
-    /* ×¢²áÒ³Ãæ */
-	PagesInit();
 
-    /* ÔËĞĞÖ÷Ò³Ãæ */
-	Page("main")->Run(NULL);
-		
+
 	return 0;
 }
 

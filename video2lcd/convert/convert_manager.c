@@ -29,6 +29,12 @@ int RegisterConvertOpr(PT_ConvertOpr ptConvertOpr)
 int ConvertOprInit(void)
 {
     int ret = 0;
+
+	ret = Yuv2RgbInit();
+
+	ret |= Rgb2RgbInit();
+
+	ret |= registerMjpeg2rgb();
     
     return ret;
 }
