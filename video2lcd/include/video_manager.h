@@ -47,6 +47,6 @@ int RegisterVideoOpr(PT_VideoOpr ptVideoOpr);
 int RegisterV4L2Opr(void);
 int VideoDeviceInit(char *strDevName, PT_VideoDevice ptVideoDevice);
 int VideoOprInit(void);
-
+PT_VideoOpr GetVideoOpr(char *pcName);
 
 #endif // __VIDEO_MANAGER_H__

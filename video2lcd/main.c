@@ -26,7 +26,13 @@ int main(int argc, char **argv)
 {	
 	int iError;
 
-	PT_VideoDevice ptVideoDevice;
+	PT_VideoOpr ptVideoDevice;
+
+	PT_VideoMem ptVideoMem;
+
+	PT_VideoOpr ptVideoOpr;
+
+	PT_PixelDataset ptPixelDataset;
 
 	/*显示器初始化*/
 	DisplayInit();
@@ -41,10 +47,21 @@ int main(int argc, char **argv)
 	/*转换格式初始化*/
 	ConvertOprInit();
 
-	
-	
+	AllocVideoMem(1);
 
+	ptVideoMem = GetVideoMem(0,1);
 
+	ptVideoOpr = GetVideoOpr("v4l2");
+
+	ptVideoOpr ->VideoStart(ptVideoDevice);
+
+	while(1)
+	{
+		ptVideoOpr ->VideoGetFrame(ptVideoDevice, ptPixelDataset);
+
+		
+
+	}
 
 
 
