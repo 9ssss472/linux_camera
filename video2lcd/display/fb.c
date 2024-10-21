@@ -11,7 +11,7 @@
 static int FBDeviceInit(void);
 static int FBShowPixel(int iX, int iY, unsigned int dwColor);
 static int FBCleanScreen(unsigned int dwBackColor);
-static int FBShowPage(PT_VideoMem ptVideoMem);
+static int FBShowPage(PT_PixelDataset ptPixelDataset);
 
 
 static int g_fd;
@@ -163,9 +163,14 @@ static int FBShowPixel(int iX, int iY, unsigned int dwColor)
  * -----------------------------------------------
  * 2013/02/08	     V1.0	  韦东山	      创建
  ***********************************************************************/
-static int FBShowPage(PT_VideoMem ptVideoMem)
+// static int FBShowPage(PT_VideoMem ptVideoMem)
+// {
+// 	memcpy(g_tFBOpr.pucDispMem, ptVideoMem->tPixelDatas.aucPixelDatas, ptVideoMem->tPixelDatas.iTotalBytes);
+// 	return 0;
+// }
+static int FBShowPage(PT_PixelDataset ptPixelDataset)
 {
-	memcpy(g_tFBOpr.pucDispMem, ptVideoMem->tPixelDatas.aucPixelDatas, ptVideoMem->tPixelDatas.iTotalBytes);
+	memcpy(g_tFBOpr.pucDispMem, ptPixelDataset->tPixelDatas.aucPixelDatas, ptPixelDataset->tPixelDatas.iTotalBytes);
 	return 0;
 }
 

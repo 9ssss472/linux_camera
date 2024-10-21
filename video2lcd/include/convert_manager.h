@@ -18,4 +18,5 @@ int ConvertOprInit(void);
 int Yuv2RgbInit(void);
 int Rgb2RgbInit(void);
 int registerMjpeg2rgb(void);
+int StartFormatConvert(PT_PixelDataset PixelDataIn, PT_PixelDataset PixelDataOut);
 #endif // !CONVERT_MANAGER_H

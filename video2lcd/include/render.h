@@ -4,8 +4,8 @@
 
 #include <pic_operation.h>
 #include <disp_manager.h>
-#include <page_manager.h>
-
+#include "page_manager.h"
+#include "video_manager.h"
 /**********************************************************************
  * 函数名称： PicZoom
  * 功能描述： 近邻取样插值方法缩放图片
@@ -61,7 +61,7 @@ int PicMergeRegion(int iStartXofNewPic, int iStartYofNewPic, int iStartXofOldPic
  * -----------------------------------------------
  * 2013/02/08	     V1.0	  韦东山	      创建
  ***********************************************************************/
-void FlushVideoMemToDev(PT_VideoMem ptVideoMem);
+void FlushVideoMemToDev(PT_PixelDataset ptPixelDataset)
 
 /**********************************************************************
  * 函数名称： GetPixelDatasForIcon

@@ -7,7 +7,7 @@
 #include <disp_manager.h>
 #include <input_manager.h>
 #include <pic_operation.h>
-#include <render.h>
+#include "render.h"
 #include <string.h>
 #include <picfmt_manager.h>
 
@@ -20,19 +20,29 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include "video_manager.h"
-
+#include  "convert_manager.h"
 
 int main(int argc, char **argv)
 {	
 	int iError;
 
-	PT_VideoOpr ptVideoDevice;
+	int iX, iY, iBpp;
+
+	PT_VideoDevice ptVideoDevice;
 
 	PT_VideoMem ptVideoMem;
 
 	PT_VideoOpr ptVideoOpr;
 
-	PT_PixelDataset ptPixelDataset;
+	T_PixelDataset tPixelDataset;
+
+	T_PixelDataset tFramBuffer;
+
+	T_PixelDataset tConvertBuffer;
+
+	T_PixelDataset tTmpBuffer;
+
+	T_PixelDataset tZoomBuffer;
 
 	/*显示器初始化*/
 	DisplayInit();
@@ -47,9 +57,9 @@ int main(int argc, char **argv)
 	/*转换格式初始化*/
 	ConvertOprInit();
 
-	AllocVideoMem(1);
+	GetVideoBufForDisplay(&tFramBuffer);
 
-	ptVideoMem = GetVideoMem(0,1);
+	GetDispResolution(iX, iY, iBpp);
 
 	ptVideoOpr = GetVideoOpr("v4l2");
 
@@ -57,9 +67,34 @@ int main(int argc, char **argv)
 
 	while(1)
 	{
-		ptVideoOpr ->VideoGetFrame(ptVideoDevice, ptPixelDataset);
+		ptVideoOpr ->VideoGetFrame(ptVideoDevice, &tPixelDataset);
 
-		
+		memcpy(ptVideoMem ->tPixelDatas, tPixelDataset.tVideoBuffer, tPixelDataset.tVideoBuffer.iTotalBytes);
+
+		tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+
+		if(ptVideoDevice ->pixelFormat != tFramBuffer.pixelFormat)
+		{
+			iError = StartFormatConvert(&tPixelDataset, &tConvertBuffer);
+			if(iError)
+			{
+				printf("convert error\r\n");
+				return -1;
+			}
+
+			tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+		}
+
+		if(tTmpBuffer.tVideoBuffer.iWidth != iX, || tTmpBuffer.tVideoBuffer.iHeight != iY)
+		{
+			PicZoom(&tTmpBuffer.tVideoBuffer, &tZoomBuffer.tVideoBuffer);
+		}
+
+
+
+		FlushVideoMemToDev(ptVideoMem ->tPixelDatas);
+
+
 
 	}
 

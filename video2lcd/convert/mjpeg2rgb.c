@@ -116,8 +116,18 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
     ptConvert ->tVideoBuffer.iWidth = cinfo.out_width;
     ptConvert ->tVideoBuffer.iLineBytes = cinfo.out_width *ptConvert->tVideoBuffer.iBpp / 8;
     ptConvert ->tVideoBuffer.iTotalBytes =  ptConvert ->tVideoBuffer.iLineBytes * cinfo.out_height;
+    if(ptConvert ->tVideoBuffer.aucPixelDatas == NULL)
+    {
+        ptConvert ->tVideoBuffer.aucPixelDatas = malloc(ptConvert ->tVideoBuffer.iTotalBytes);
+        if(ptConvert ->tVideoBuffer.aucPixelDatas == (void *) -1)
+        {
+            perror("ptConvert ->tVideoBuffer.aucPixelDatas");
+            return -1;
+        }
+    }
 
     pucConvertLineBuffer = ptConvert ->tVideoBuffer.aucPixelDatas;
+
 
     pucLineBuffer = malloc(cinfo.output_width * cinfo.output_components);
     if(pucLineBuffer == (void *) -1)
@@ -139,6 +149,7 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
     jpeg_finish_decompress(&cinfo);
     jpeg_decompress_destroy(&cinfo);
 
+    return 0;
 }
 
 T_ConvertOpr tMjpeg2rgbOpr

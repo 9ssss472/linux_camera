@@ -7,6 +7,7 @@
 #include <encoding_manager.h>
 #include <picfmt_manager.h>
 #include <string.h>
+#include "video_manager.h"
 
 /**********************************************************************
  * 函数名称： FlushVideoMemToDev
@@ -18,9 +19,17 @@
  * -----------------------------------------------
  * 2013/02/08	     V1.0	  韦东山	      创建
  ***********************************************************************/
-void FlushVideoMemToDev(PT_VideoMem ptVideoMem)
+// void FlushVideoMemToDev(PT_VideoMem ptVideoMem)
+// {
+// 	//memcpy(GetDefaultDispDev()->pucDispMem, ptVideoMem->tPixelDatas.aucPixelDatas, ptVideoMem.tPixelDatas.iHeight * ptVideoMem.tPixelDatas.iLineBytes);
+// 	if (!ptVideoMem->bDevFrameBuffer)
+// 	{
+// 		GetDefaultDispDev()->ShowPage(ptVideoMem);
+// 	}
+// }
+
+void FlushVideoMemToDev(PT_PixelDataset ptPixelDataset)
 {
-	//memcpy(GetDefaultDispDev()->pucDispMem, ptVideoMem->tPixelDatas.aucPixelDatas, ptVideoMem.tPixelDatas.iHeight * ptVideoMem.tPixelDatas.iLineBytes);
 	if (!ptVideoMem->bDevFrameBuffer)
 	{
 		GetDefaultDispDev()->ShowPage(ptVideoMem);

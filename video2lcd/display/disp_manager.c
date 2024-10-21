@@ -2,6 +2,7 @@
 #include <config.h>
 #include "disp_manager.h"
 #include <string.h>
+#include  "video_manager.h"
 
 static PT_DispOpr g_ptDispOprHead;
 static PT_DispOpr g_ptDefaultDispOpr;
@@ -517,6 +518,21 @@ void ClearVideoMemRegion(PT_VideoMem ptVideoMem, PT_Layout ptLayout, unsigned in
 		}
 	}
 
+}
+
+
+int GetVideoBufForDisplay(PT_PixelDataset ptFrameBuf)
+{
+    ptFrameBuf->iPixelFormat = (g_ptDefaultDispOpr->iBpp == 16) ? V4L2_PIX_FMT_RGB565 : \
+                                   (g_ptDefaultDispOpr->iBpp == 32) ?  V4L2_PIX_FMT_RGB32 : \
+                                           0;
+    ptFrameBuf->tPixelDatas.iWidth  = g_ptDefaultDispOpr->iXres;
+    ptFrameBuf->tPixelDatas.iHeight = g_ptDefaultDispOpr->iYres;
+    ptFrameBuf->tPixelDatas.iBpp    = g_ptDefaultDispOpr->iBpp;
+    ptFrameBuf->tPixelDatas.iLineBytes    = g_ptDefaultDispOpr->iLineWidth;
+    ptFrameBuf->tPixelDatas.iTotalBytes   = ptFrameBuf->tPixelDatas.iLineBytes * ptFrameBuf->tPixelDatas.iHeight;
+    ptFrameBuf->tPixelDatas.aucPixelDatas = g_ptDefaultDispOpr->pucDispMem;
+    return 0;
 }
 
 /**********************************************************************
