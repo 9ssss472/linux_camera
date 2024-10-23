@@ -27,7 +27,7 @@ struct VideoDevice {
 
 struct VideoOpr {
     char *name;
-    
+    int (*PutFrame)(PT_VideoDevice ptVideoDevice, PT_PixelDataset ptVideoBuf);
     int (*VideoInit)(PT_VideoDevice ptVideoDevice);
     int (*VideoGetFrame)(PT_VideoDevice ptVideoDevice, PT_PixelDataset PT_PixelDatas);
     int (*VideoExit)(PT_VideoDevice ptVideoDevice);

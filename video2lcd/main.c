@@ -28,9 +28,10 @@ int main(int argc, char **argv)
 
 	int iX, iY, iBpp;
 
+	int iMergeX,iMergeY;
+
 	PT_VideoDevice ptVideoDevice;
 
-	PT_VideoMem ptVideoMem;
 
 	PT_VideoOpr ptVideoOpr;
 
@@ -69,9 +70,10 @@ int main(int argc, char **argv)
 	{
 		ptVideoOpr ->VideoGetFrame(ptVideoDevice, &tPixelDataset);
 
-		memcpy(ptVideoMem ->tPixelDatas, tPixelDataset.tVideoBuffer, tPixelDataset.tVideoBuffer.iTotalBytes);
+		//memcpy(ptVideoMem ->tPixelDatas, tPixelDataset.tVideoBuffer, tPixelDataset.tVideoBuffer.iTotalBytes);
 
-		tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+		//tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+		tTmpBuffer = &tPixelDataset;
 
 		if(ptVideoDevice ->pixelFormat != tFramBuffer.pixelFormat)
 		{
@@ -82,19 +84,42 @@ int main(int argc, char **argv)
 				return -1;
 			}
 
-			tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+			//tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
+			tTmpBuffer = &tConvertBuffer;
 		}
 
-		if(tTmpBuffer.tVideoBuffer.iWidth != iX, || tTmpBuffer.tVideoBuffer.iHeight != iY)
+		if(tTmpBuffer.tVideoBuffer.iWidth >= iX, || tTmpBuffer.tVideoBuffer.iHeight >= iY)
 		{
+			int k = tTmpBuffer.tVideoBuffer.iHeight / tTmpBuffer.tVideoBuffer.iWidth;
+			tZoomBuffer.tVideoBuffer.iWidth = iX;
+			tZoomBuffer.tVideoBuffer.iHeight = iX * k;
+
+			if(tZoomBuffer.tVideoBuffer.iHeight > iY)
+			{
+				tZoomBuffer.tVideoBuffer.iWidth = iY / k;
+				tZoomBuffer.tVideoBuffer.iHeight = iY;
+			}
+			tZoomBuffer.tVideoBuffer.iBpp = iBpp;
+			tZoomBuffer.tVideoBuffer.iLineBytes = tZoomBuffer.tVideoBuffer.iWidth *tZoomBuffer.tVideoBuffer.iBpp / 8;
+			tZoomBuffer.tVideoBuffer.iTotalBytes = tZoomBuffer.tVideoBuffer.iLineBytes * tZoomBuffer.tVideoBuffer.iWidth;
+
+			if(!tZoomBuffer.tVideoBuffer.aucPixelDatas )
+				tZoomBuffer.tVideoBuffer.aucPixelDatas = malloc(tZoomBuffer.tVideoBuffer.iTotalBytes);
+
 			PicZoom(&tTmpBuffer.tVideoBuffer, &tZoomBuffer.tVideoBuffer);
+
+			tTmpBuffer = &tZoomBuffer;
 		}
 
+		iMergeX = (iX - tTmpBuffer.tVideoBuffer.iWidth) / 2;
+		iMergeY = (iY - tTmpBuffer.tVideoBuffer.iHeight) / 2;
 
+		PicMerge(iMergeX, iMergeY, &tTmpBuffer.tVideoBuffer, &tFramBuffer.tVideoBuffer ) ;
+		
 
-		FlushVideoMemToDev(ptVideoMem ->tPixelDatas);
+		FlushVideoMemToDev(&tFramBuffer.tVideoBuffer);
 
-
+		ptVideoOpr ->PutFrame(ptVideoDevice, )		
 
 	}
 

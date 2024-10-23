@@ -152,6 +152,21 @@ int V4L2GetFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
     return 0;
 }
 
+int V4L2PutFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
+{
+    struct v4l2_buffer buf;
+    memset(&buf, 0, sizeof(buf));
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    ret = ioctl(ptVideoDevice->iFd, VIDIOC_QBUF, &buf);
+    if(ret < 0)
+    {
+        perror("ioctl VIDIOC_QBUF:");
+        return -1;
+    }
+
+}
+
 int VideoExit(PT_VideoDevice ptVideoDevice)
 {
     int i;
@@ -194,6 +209,7 @@ int VideoStop(PT_VideoDevice ptVideoDevice)
     .VideoExit = VideoExit,
     .VideoStart = V4L2Start,
     .VideoStop = V4L2Stop,
+    .PutFrame  = V4L2PutFrame,
 };
 
 int RegisterV4L2Opr(void)
