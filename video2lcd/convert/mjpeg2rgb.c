@@ -1,14 +1,14 @@
 #include "convert_manager.h"
-#include "libjpeg.h"
 #include <string.h>
 #include <setjmp.h>
-
-typedef stuct TMyErrorMgr {
+#include "jpeglib.h"
+#include <stdlib.h>
+typedef struct TMyErrorMgr {
     struct jpeg_error_mgr jerr;
     jmp_buf jmp_buf;
 }T_MyErrorMgr, *PT_MyErrorMgr;
 
-void my_error_exit(struct jpeg_decompress_struct *cinfo)
+void my_error_exit(j_common_ptr ptCInfo)
 {
      static char errStr[JMSG_LENGTH_MAX];
     
@@ -16,9 +16,9 @@ void my_error_exit(struct jpeg_decompress_struct *cinfo)
 
     /* Create the message */
     (*ptCInfo->err->format_message) (ptCInfo, errStr);
-    DBG_PRINTF("%s\n", errStr);
+    printf("%s\n", errStr);
 
-    longjmp(ptMyErr->jmp_buf,);
+    longjmp(ptMyErr->jmp_buf,1);
 }
 
 int isSupportMjpeg2rgb(int formatSrc, int formatDest)
@@ -82,9 +82,9 @@ int convertLine(int width,int srcBpp, int destBpp, unsigned char * pucSrcData, u
 int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
 {
     T_MyErrorMgr tJerr;
-    sturct jpeg_decompress_struct cinfo;
+    struct jpeg_decompress_struct cinfo;
     unsigned char * pucLineBuffer;
-    int i;
+
     unsigned char * pucConvertLineBuffer;
 
     if(setjmp(tJerr.jmp_buf))
@@ -104,7 +104,7 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
     
     jpeg_mem_src_tj(&cinfo, ptSource ->tVideoBuffer.aucPixelDatas, ptSource ->tVideoBuffer.iTotalBytes);
 
-    jpeg_read_header(&cinfo, true);
+    jpeg_read_header(&cinfo, 1);
 
     cinfo.out_color_space = JCS_RGB;
     cinfo.scale_num=1;
@@ -112,10 +112,10 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
 
     jpeg_start_decompress(&cinfo);
 
-    ptConvert ->tVideoBuffer.iHeight = cinfo.out_height;
-    ptConvert ->tVideoBuffer.iWidth = cinfo.out_width;
-    ptConvert ->tVideoBuffer.iLineBytes = cinfo.out_width *ptConvert->tVideoBuffer.iBpp / 8;
-    ptConvert ->tVideoBuffer.iTotalBytes =  ptConvert ->tVideoBuffer.iLineBytes * cinfo.out_height;
+    ptConvert ->tVideoBuffer.iHeight = cinfo.output_height;
+    ptConvert ->tVideoBuffer.iWidth = cinfo.output_width;
+    ptConvert ->tVideoBuffer.iLineBytes = cinfo.output_width *ptConvert->tVideoBuffer.iBpp / 8;
+    ptConvert ->tVideoBuffer.iTotalBytes =  ptConvert ->tVideoBuffer.iLineBytes * cinfo.output_height;
     if(ptConvert ->tVideoBuffer.aucPixelDatas == NULL)
     {
         ptConvert ->tVideoBuffer.aucPixelDatas = malloc(ptConvert ->tVideoBuffer.iTotalBytes);
@@ -138,7 +138,7 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
 
     while(cinfo.output_scanline < cinfo.output_height)
     {
-        jpeg_read_scanline(&cinfo, &pucLineBuffer,1);
+        jpeg_read_scanlines(&cinfo, &pucLineBuffer,1);
 
         convertLine(cinfo.output_width, 24, ptConvert->tVideoBuffer.iBpp , pucLineBuffer, pucConvertLineBuffer);
         pucConvertLineBuffer +=  ptConvert ->tVideoBuffer.iLineBytes;
@@ -147,16 +147,16 @@ int convertMjpeg2rgbFormat(PT_PixelDataset ptSource, PT_PixelDataset ptConvert)
     
     free(pucLineBuffer);
     jpeg_finish_decompress(&cinfo);
-    jpeg_decompress_destroy(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
 
     return 0;
 }
 
-T_ConvertOpr tMjpeg2rgbOpr
+static T_ConvertOpr tMjpeg2rgbOpr = 
 {
-    .name = "mjpeg2rgb"
-    .isSupported = isSupportMjpeg2rgb(int formatSrc, int formatDest);
-    .convertFormat = convertMjpeg2rgbFormat(T_VideoDevice ptSource, PT_VideoDevice ptConvert);
+    .name = "mjpeg2rgb",
+    .isSupported = isSupportMjpeg2rgb,
+    .convertFormat = convertMjpeg2rgbFormat,
 };
 
 int registerMjpeg2rgb(void)

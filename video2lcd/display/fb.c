@@ -49,20 +49,20 @@ static int FBDeviceInit(void)
 	g_fd = open(FB_DEVICE_NAME, O_RDWR);
 	if (0 > g_fd)
 	{
-		DBG_PRINTF("can't open %s\n", FB_DEVICE_NAME);
+		printf("can't open %s\n", FB_DEVICE_NAME);
 	}
 
 	ret = ioctl(g_fd, FBIOGET_VSCREENINFO, &g_tFBVar);
 	if (ret < 0)
 	{
-		DBG_PRINTF("can't get fb's var\n");
+		printf("can't get fb's var\n");
 		return -1;
 	}
 
 	ret = ioctl(g_fd, FBIOGET_FSCREENINFO, &g_tFBFix);
 	if (ret < 0)
 	{
-		DBG_PRINTF("can't get fb's fix\n");
+		printf("can't get fb's fix\n");
 		return -1;
 	}
 	
@@ -70,7 +70,7 @@ static int FBDeviceInit(void)
 	g_pucFBMem = (unsigned char *)mmap(NULL , g_dwScreenSize, PROT_READ | PROT_WRITE, MAP_SHARED, g_fd, 0);
 	if (0 > g_pucFBMem)	
 	{
-		DBG_PRINTF("can't mmap\n");
+		printf("can't mmap\n");
 		return -1;
 	}
 
@@ -111,7 +111,7 @@ static int FBShowPixel(int iX, int iY, unsigned int dwColor)
 
 	if ((iX >= g_tFBVar.xres) || (iY >= g_tFBVar.yres))
 	{
-		DBG_PRINTF("out of region\n");
+		printf("out of region\n");
 		return -1;
 	}
 
@@ -145,7 +145,7 @@ static int FBShowPixel(int iX, int iY, unsigned int dwColor)
 		}
 		default :
 		{
-			DBG_PRINTF("can't support %d bpp\n", g_tFBVar.bits_per_pixel);
+			printf("can't support %d bpp\n", g_tFBVar.bits_per_pixel);
 			return -1;
 		}
 	}
@@ -170,7 +170,7 @@ static int FBShowPixel(int iX, int iY, unsigned int dwColor)
 // }
 static int FBShowPage(PT_PixelDataset ptPixelDataset)
 {
-	memcpy(g_tFBOpr.pucDispMem, ptPixelDataset->tPixelDatas.aucPixelDatas, ptPixelDataset->tPixelDatas.iTotalBytes);
+	memcpy(g_tFBOpr.pucDispMem, ptPixelDataset->tVideoBuffer.aucPixelDatas, ptPixelDataset->tVideoBuffer.iTotalBytes);
 	return 0;
 }
 
@@ -235,7 +235,7 @@ static int FBCleanScreen(unsigned int dwBackColor)
 		}
 		default :
 		{
-			DBG_PRINTF("can't support %d bpp\n", g_tFBVar.bits_per_pixel);
+			printf("can't support %d bpp\n", g_tFBVar.bits_per_pixel);
 			return -1;
 		}
 	}

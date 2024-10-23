@@ -1,5 +1,5 @@
 
-CROSS_COMPILE = arm-linux-
+CROSS_COMPILE = 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
 CC		= $(CROSS_COMPILE)gcc
@@ -14,33 +14,33 @@ OBJDUMP		= $(CROSS_COMPILE)objdump
 export AS LD CC CPP AR NM
 export STRIP OBJCOPY OBJDUMP
 
-CFLAGS := -Wall -Werror -O2 -g
+CFLAGS := -Wall -O2 -g
 CFLAGS += -I $(shell pwd)/include
 
-LDFLAGS := -lm -lfreetype -lts -lpthread -ljpeg
+LDFLAGS := -lm -ljpeg
 
 export CFLAGS LDFLAGS
 
 TOPDIR := $(shell pwd)
 export TOPDIR
 
-TARGET := digitpic
+TARGET := video2lcd
 
 
 obj-y += main.o
+obj-y += convert/
 obj-y += display/
-obj-y += encoding/
-obj-y += fonts/
-obj-y += input/
-obj-y += debug/
 obj-y += render/
-obj-y += page/
-obj-y += file/
+obj-y += video/
 
-all : 
+all : start_recursive_build $(TARGET)
+	@echo $(TARGET) has been built!
+
+start_recursive_build:
 	make -C ./ -f $(TOPDIR)/Makefile.build
-	$(CC) $(LDFLAGS) -o $(TARGET) built-in.o
 
+$(TARGET) : start_recursive_build
+	$(CC) -o $(TARGET) built-in.o $(LDFLAGS)
 
 clean:
 	rm -f $(shell find -name "*.o")

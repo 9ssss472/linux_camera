@@ -10,7 +10,7 @@
 typedef struct VideoOpr T_VideoOpr, *PT_VideoOpr;
 typedef struct VideoDevice T_VideoDevice, *PT_VideoDevice;
 typedef struct VideoBuffer  T_PixelDataset, *PT_PixelDataset;
-#define FRAME_COUNTS  3;
+#define FRAME_COUNTS  3
 
 struct VideoDevice {
     int iFd;

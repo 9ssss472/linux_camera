@@ -2,10 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <render.h>
-#include <file.h>
-#include <fonts_manager.h>
-#include <encoding_manager.h>
-#include <picfmt_manager.h>
 #include <string.h>
 #include "video_manager.h"
 
@@ -30,10 +26,9 @@
 
 void FlushVideoMemToDev(PT_PixelDataset ptPixelDataset)
 {
-	if (!ptVideoMem->bDevFrameBuffer)
-	{
-		GetDefaultDispDev()->ShowPage(ptVideoMem);
-	}
+
+		GetDefaultDispDev()->ShowPage(ptPixelDataset);
+	
 }
 
 /**********************************************************************

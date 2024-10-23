@@ -2,30 +2,26 @@
 #ifndef _PIC_OPERATION_H
 #define _PIC_OPERATION_H
 
-#include <file.h>
-
-/* 图片的象素数据 */
-typedef struct PixelDatas {
-	int iWidth;   /* 宽度: 一行有多少个象素 */
-	int iHeight;  /* 高度: 一列有多少个象素 */
-	int iBpp;     /* 一个象素用多少位来表示 */
-	int iLineBytes;  /* 一行数据有多少字节 */
-	int iTotalBytes; /* 所有字节数 */ 
-	unsigned char *aucPixelDatas;  /* 象素数据存储的地方 */
-}T_PixelDatas, *PT_PixelDatas;
+#include "video_manager.h"
+#include <pic_operation.h>
 
 
-typedef struct PicFileParser {
-	char *name;                     /* 图片文件解析模块的名字 */
-	int (*isSupport)(PT_FileMap ptFileMap);  /* 是否支持某文件 */
-	int (*GetPixelDatas)(PT_FileMap ptFileMap, PT_PixelDatas ptPixelDatas);  /* 从文件中解析出图像的象素数据 */
-	int (*FreePixelDatas)(PT_PixelDatas ptPixelDatas);  /* 释放图像的象素数据所占内存 */
-    struct PicFileParser *ptNext;  /* 链表 */
-}T_PicFileParser, *PT_PicFileParser;
+typedef struct Layout {
+	int iTopLeftX;
+	int iTopLeftY;
+	int iBotRightX;
+	int iBotRightY;
+	char *strIconName;
+}T_Layout, *PT_Layout;
 
-#endif /* _PIC_OPERATION_H */
 
- */
+
+typedef enum {
+	VMS_FREE = 0,
+	VMS_USED_FOR_PREPARE,
+	VMS_USED_FOR_CUR,	
+}E_VideoMemState;
+
 typedef enum {
 	PS_BLANK = 0,
 	PS_GENERATING,
@@ -52,7 +48,7 @@ typedef struct DispOpr {
 	int (*DeviceInit)(void);     /* 设备初始化函数 */
 	int (*ShowPixel)(int iPenX, int iPenY, unsigned int dwColor);    /* 把指定座标的象素设为某颜色 */
 	int (*CleanScreen)(unsigned int dwBackColor);                    /* 清屏为某颜色 */
-	int (*ShowPage)(PT_PixelDataset ptPixelDataset);                         /* 显示一页,数据源自ptVideoMem */
+	int (*ShowPage)(PT_PixelDatas ptPixelDataset );                         /* 显示一页,数据源自ptVideoMem */
 	struct DispOpr *ptNext;      /* 链表 */
 }T_DispOpr, *PT_DispOpr;
 
@@ -200,19 +196,6 @@ void PutVideoMem(PT_VideoMem ptVideoMem);
  ***********************************************************************/
 void ClearVideoMem(PT_VideoMem ptVideoMem, unsigned int dwColor);
 
-/**********************************************************************
- * 函数名称： ClearVideoMemRegion
- * 功能描述： 把VideoMem中内存的指定区域全部清为某种颜色
- * 输入参数： ptVideoMem - VideoMem结构体指针, 内含要操作的内存
- *            ptLayout   - 矩形区域, 指定了左上角,右在角的坐标
- *            dwColor    - 设置为该颜色
- * 输出参数： 无
- * 返 回 值： 无
- * 修改日期        版本号     修改人	      修改内容
- * -----------------------------------------------
- * 2013/02/08	     V1.0	  韦东山	      创建
- ***********************************************************************/
-void ClearVideoMemRegion(PT_VideoMem ptVideoMem, PT_Layout ptLayout, unsigned int dwColor);
 
 /**********************************************************************
  * 函数名称： FBInit
