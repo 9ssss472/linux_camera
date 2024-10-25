@@ -172,6 +172,6 @@ extern void initLut(void);
 int Yuv2RgbInit(void)
 {
     initLut();
-    return RegisterVideoConvert(&g_tYuv2RgbConvert);
+    return RegisterConvertOpr(&g_tYuv2RgbConvert);
 }
 

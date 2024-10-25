@@ -36,7 +36,7 @@ int PicZoom(PT_PixelDatas ptOriginPic, PT_PixelDatas ptZoomPic)
     pdwSrcXTable = malloc(sizeof(unsigned long) * dwDstWidth);
     if (NULL == pdwSrcXTable)
     {
-        DBG_PRINTF("malloc error!\n");
+        printf("malloc error!\n");
         return -1;
     }
 

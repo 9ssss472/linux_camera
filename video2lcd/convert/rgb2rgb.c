@@ -104,7 +104,7 @@ static T_ConvertOpr g_tRgb2RgbConvert = {
 /* зЂВс */
 int Rgb2RgbInit(void)
 {
-    return RegisterVideoConvert(&g_tRgb2RgbConvert);
+    return RegisterConvertOpr(&g_tRgb2RgbConvert);
 }
 
 

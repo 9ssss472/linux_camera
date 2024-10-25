@@ -13,7 +13,7 @@
 
 T_VideoOpr V4L2Opr;
 
-static int  g_aiSuportedFormat{V4L2_PIX_FMT_RGB565,  V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_JPEG};
+static int  g_aiSuportedFormat[]={V4L2_PIX_FMT_RGB565,  V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_JPEG};
 
 #define DEFAULT_FORMAT V4L2_PIX_FMT_RGB565
 
@@ -51,12 +51,12 @@ int V4L2Init(PT_VideoDevice ptVideoDevice)
     
     ptVideoDevice ->iFd = iFd;
 
-    GetDispResolution(x, y, iBpp);
+    GetDispResolution(&x, &y, &iBpp);
 
     tFmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     tFmt.fmt.pix.width = x;
     tFmt.fmt.pix.height = y;
-    tFmt.fmt.pix.format = DEFAULT_FORMAT;
+    tFmt.fmt.pix.pixelformat = DEFAULT_FORMAT;
 
     if ( 0 > ioctl(iFd , VIDIOC_S_FMT, &tFmt))
     {
@@ -64,8 +64,8 @@ int V4L2Init(PT_VideoDevice ptVideoDevice)
         return -1;
     }
     ptVideoDevice ->pixelFormat = DEFAULT_FORMAT;
-    ptVideoDevice ->width = tFmt.width;
-    ptVideoDevice ->height = tFmt.height;
+    ptVideoDevice ->width = tFmt.fmt.pix.width;
+    ptVideoDevice ->height = tFmt.fmt.pix.height;
 
     tReqBuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     tReqBuf.count =  FRAME_COUNTS;
@@ -82,29 +82,30 @@ int V4L2Init(PT_VideoDevice ptVideoDevice)
     tBuffer.memory = V4L2_MEMORY_MMAP;
     for(tBuffer.index = 0; tBuffer.index < FRAME_COUNTS; tBuffer.index ++)
     {
-        ioctl(iFd, VIDIOC_QUERYBUF, &tBuffer)
+        ioctl(iFd, VIDIOC_QUERYBUF, &tBuffer);
         
-        PT_VideoDevice->aucFrameBuffer[tBuffer.index] = mmap(NULL, tBuffer.lenth, PORT_READ | PORT_WRITE, MAP_SHARED,
+        ptVideoDevice->aucFrameBuffer[tBuffer.index] = mmap(NULL, tBuffer.length, PROT_READ | PROT_WRITE, MAP_SHARED,
          iFd, tBuffer.m.offset);
 
-         if(MAP_FAILED == PT_VideoDevice->aucFrameBuffer[tBuffer.index])
+         if(MAP_FAILED == ptVideoDevice->aucFrameBuffer[tBuffer.index])
          {
-            perror("mmap error")
+            perror("mmap error");
             return -1;
          }    
     }
-    ptVideoDevice ->sizeOfOneFrame = tBuffer.lenth;
+    ptVideoDevice ->sizeOfOneFrame = tBuffer.length;
 
     for(tBuffer.index = 0; tBuffer.index < FRAME_COUNTS; tBuffer.index ++)
     {
         if( 0 > ioctl(iFd, VIDIOC_QBUF, &tBuffer))
         {
-            perror("ioctl VIDIOC_QBUF")
+            perror("ioctl VIDIOC_QBUF");
             return -1;
         }
     }
       ptVideoDevice ->ptVideoOpr =   &V4L2Opr;
 
+    return 0;
 }
 
 int V4L2GetFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
@@ -138,15 +139,16 @@ int V4L2GetFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
 
     ptVideoDevice -> frameIndex = buf.index;
 
-    ptPixelDataset ->ptVideoBuffer.iWidth = buf.width;
-    ptPixelDataset ->ptVideoBuffer.iHeight = buf.height;
-    ptPixelDataset ->ptVideoBuffer.iBpp = (ptVideoDevice ->pixelFormat == V4L2_PIX_FMT_RGB565 ) ? 16  :\ 
-                                        (ptVideoDevice ->pixelFormat == V4L2_PIX_FMT_YUYV ) ? 16 :\
-                                        (ptVideoDevice -> pixelFormat == V4L2_PIX_FMT_JPEG ) ? 16 : 0 ;
+    ptPixelDataset ->tVideoBuffer.iWidth = ptVideoDevice ->width;
+    ptPixelDataset ->tVideoBuffer.iHeight = ptVideoDevice ->height;
+    ptPixelDataset ->tVideoBuffer.iBpp = (ptVideoDevice->pixelFormat == V4L2_PIX_FMT_YUYV) ? 16 : \
+                                        (ptVideoDevice->pixelFormat == V4L2_PIX_FMT_MJPEG) ? 0 :  \
+                                        (ptVideoDevice->pixelFormat == V4L2_PIX_FMT_RGB565) ? 16 :  \
+                                        0;
 
-    ptPixelDataset ->ptVideoBuffer.iLineBytes = buf.width *ptPixelDataset ->ptVideoBuffer.iBpp /8;
-    ptPixelDataset ->ptVideoBuffer.iTotalBytes = buf.bytesused;
-    ptPixelDataset ->ptVideoBuffer.aucPixelDatas[ptVideoDevice -> frameIndex] = ptVideoDevice ->aucFrameBuffer[ptVideoDevice -> frameIndex];
+    ptPixelDataset ->tVideoBuffer.iLineBytes = ptVideoDevice ->width * ptPixelDataset ->tVideoBuffer.iBpp/8;
+    ptPixelDataset ->tVideoBuffer.iTotalBytes = buf.bytesused;
+    ptPixelDataset ->tVideoBuffer.aucPixelDatas = ptVideoDevice ->aucFrameBuffer[buf.index];
     ptPixelDataset ->pixelFormat = ptVideoDevice -> pixelFormat;
 
     return 0;
@@ -155,6 +157,7 @@ int V4L2GetFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
 int V4L2PutFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
 {
     struct v4l2_buffer buf;
+    int ret;
     memset(&buf, 0, sizeof(buf));
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
@@ -164,7 +167,7 @@ int V4L2PutFrame(PT_VideoDevice ptVideoDevice,PT_PixelDataset ptPixelDataset)
         perror("ioctl VIDIOC_QBUF:");
         return -1;
     }
-
+    return 0;
 }
 
 int VideoExit(PT_VideoDevice ptVideoDevice)
@@ -177,6 +180,8 @@ int VideoExit(PT_VideoDevice ptVideoDevice)
     }
 
     close(ptVideoDevice ->iFd);
+
+    return 0;
 }
 
 int VideoStart(PT_VideoDevice ptVideoDevice)
@@ -188,6 +193,7 @@ int VideoStart(PT_VideoDevice ptVideoDevice)
         perror("ioctl VIDIOC_STREAMON");
         return -1;
     }
+    return 0;
 }
 
 int VideoStop(PT_VideoDevice ptVideoDevice)
@@ -199,16 +205,16 @@ int VideoStop(PT_VideoDevice ptVideoDevice)
         perror("ioctl VIDIOC_STREAMON");
         return -1;
     }
-
+    return 0;
 }
 
 
-  V4L2Opr = {
-    .VideoInit = V4L2Init;
+T_VideoOpr V4L2Opr = {
+    .VideoInit = V4L2Init,
     .VideoGetFrame = V4L2GetFrame,
     .VideoExit = VideoExit,
-    .VideoStart = V4L2Start,
-    .VideoStop = V4L2Stop,
+    .VideoStart = VideoStart,
+    .VideoStop = VideoStop,
     .PutFrame  = V4L2PutFrame,
 };
 

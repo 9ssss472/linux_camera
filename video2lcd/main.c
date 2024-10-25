@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <config.h>
-#include <encoding_manager.h>
-#include <fonts_manager.h>
+
+
 #include <disp_manager.h>
-#include <input_manager.h>
+
 #include <pic_operation.h>
 #include "render.h"
 #include <string.h>
-#include <picfmt_manager.h>
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -32,7 +32,6 @@ int main(int argc, char **argv)
 
 	PT_VideoDevice ptVideoDevice;
 
-
 	PT_VideoOpr ptVideoOpr;
 
 	T_PixelDataset tPixelDataset;
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
 
 	T_PixelDataset tConvertBuffer;
 
-	T_PixelDataset tTmpBuffer;
+	PT_PixelDataset ptTmpBuffer;
 
 	T_PixelDataset tZoomBuffer;
 
@@ -53,6 +52,8 @@ int main(int argc, char **argv)
 	/*摄像头初始化*/
 	VideoOprInit();
 
+	ptVideoDevice = malloc(sizeof(T_VideoDevice ));	
+
 	VideoDeviceInit("v4l2",ptVideoDevice);
 
 	/*转换格式初始化*/
@@ -60,7 +61,7 @@ int main(int argc, char **argv)
 
 	GetVideoBufForDisplay(&tFramBuffer);
 
-	GetDispResolution(iX, iY, iBpp);
+	GetDispResolution(&iX, &iY, &iBpp);
 
 	ptVideoOpr = GetVideoOpr("v4l2");
 
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 		//memcpy(ptVideoMem ->tPixelDatas, tPixelDataset.tVideoBuffer, tPixelDataset.tVideoBuffer.iTotalBytes);
 
 		//tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
-		tTmpBuffer = &tPixelDataset;
+		ptTmpBuffer = &tPixelDataset;
 
 		if(ptVideoDevice ->pixelFormat != tFramBuffer.pixelFormat)
 		{
@@ -85,12 +86,12 @@ int main(int argc, char **argv)
 			}
 
 			//tTmpBuffer.tVideoBuffer.aucPixelDatas = tPixelDataset.tVideoBuffer.aucPixelDatas;
-			tTmpBuffer = &tConvertBuffer;
+			ptTmpBuffer = &tConvertBuffer;
 		}
 
-		if(tTmpBuffer.tVideoBuffer.iWidth >= iX, || tTmpBuffer.tVideoBuffer.iHeight >= iY)
+		if(ptTmpBuffer->tVideoBuffer.iWidth >= iX || ptTmpBuffer->tVideoBuffer.iHeight >= iY)
 		{
-			int k = tTmpBuffer.tVideoBuffer.iHeight / tTmpBuffer.tVideoBuffer.iWidth;
+			int k = ptTmpBuffer->tVideoBuffer.iHeight / ptTmpBuffer->tVideoBuffer.iWidth;
 			tZoomBuffer.tVideoBuffer.iWidth = iX;
 			tZoomBuffer.tVideoBuffer.iHeight = iX * k;
 
@@ -106,20 +107,20 @@ int main(int argc, char **argv)
 			if(!tZoomBuffer.tVideoBuffer.aucPixelDatas )
 				tZoomBuffer.tVideoBuffer.aucPixelDatas = malloc(tZoomBuffer.tVideoBuffer.iTotalBytes);
 
-			PicZoom(&tTmpBuffer.tVideoBuffer, &tZoomBuffer.tVideoBuffer);
+			PicZoom(&ptTmpBuffer->tVideoBuffer, &tZoomBuffer.tVideoBuffer);
 
-			tTmpBuffer = &tZoomBuffer;
+			ptTmpBuffer = &tZoomBuffer;
 		}
 
-		iMergeX = (iX - tTmpBuffer.tVideoBuffer.iWidth) / 2;
-		iMergeY = (iY - tTmpBuffer.tVideoBuffer.iHeight) / 2;
+		iMergeX = (iX - ptTmpBuffer->tVideoBuffer.iWidth) / 2;
+		iMergeY = (iY - ptTmpBuffer->tVideoBuffer.iHeight) / 2;
 
-		PicMerge(iMergeX, iMergeY, &tTmpBuffer.tVideoBuffer, &tFramBuffer.tVideoBuffer ) ;
+		PicMerge(iMergeX, iMergeY, &ptTmpBuffer->tVideoBuffer, &tFramBuffer.tVideoBuffer ) ;
 		
 
-		FlushVideoMemToDev(&tFramBuffer.tVideoBuffer);
+		//FlushVideoMemToDev(&tFramBuffer);
 
-		ptVideoOpr ->PutFrame(ptVideoDevice, )		
+		ptVideoOpr ->PutFrame(ptVideoDevice, &tFramBuffer);		
 
 	}
 
